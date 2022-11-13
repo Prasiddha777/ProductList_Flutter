@@ -18,7 +18,7 @@ class Cart {
       this.unitTag,
       this.image});
 
-  factory Cart.fromMap(Map<dynamic, dynamic> fromMap) {
+  factory Cart.fromMap(Map<String, dynamic> fromMap) {
     return Cart(
       id: fromMap['id'],
       productId: fromMap['productId'],
@@ -32,7 +32,7 @@ class Cart {
   }
 
   //
-  Map<dynamic, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {
       'id': id,
       'productId': productId,
