@@ -2,6 +2,7 @@ import 'package:badges/badges.dart';
 import 'package:cart/database/db_helper.dart';
 import 'package:cart/model/cart_model.dart';
 import 'package:cart/provider/cart_provider.dart';
+import 'package:cart/screens/cartlist.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -59,21 +60,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         ),
         actions: [
-          Center(
-            child: Badge(
-              animationDuration: const Duration(milliseconds: 300),
-              badgeContent: Consumer<CartProvider>(
-                builder: (context, value, child) {
-                  return Text(
-                    value.getCounter().toString(),
-                    style: TextStyle(color: Colors.white),
-                  );
-                },
-              ),
-              child: const Icon(
-                Icons.shopping_bag_outlined,
-                color: Colors.black,
-                size: 27,
+          InkWell(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => CartScreen()));
+            },
+            child: Center(
+              child: Badge(
+                animationDuration: const Duration(milliseconds: 300),
+                badgeContent: Consumer<CartProvider>(
+                  builder: (context, value, child) {
+                    return Text(
+                      value.getCounter().toString(),
+                      style: TextStyle(color: Colors.white),
+                    );
+                  },
+                ),
+                child: const Icon(
+                  Icons.shopping_bag_outlined,
+                  color: Colors.black,
+                  size: 27,
+                ),
               ),
             ),
           ),
@@ -85,65 +92,65 @@ class _ProductListScreenState extends State<ProductListScreen> {
       body: Column(
         children: [
           Expanded(
-              child: ListView.builder(
-                  itemCount: productName.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
+            child: ListView.builder(
+              itemCount: productName.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  child: Card(
+                    child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 3,
-                          ),
-                          child: ListTile(
-                              leading:
-                                  Image.network(productImage[index].toString()),
-                              title: Text(
-                                productName[index].toString(),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                'Rs ${productPrice[index].toString()} per ${productUnit[index].toString()}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              trailing: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.amber,
-                                ),
-                                onPressed: () {
-                                  dbHelper!
-                                      .insert(
-                                    Cart(
-                                        id: index,
-                                        productId: index.toString(),
-                                        productName:
-                                            productName[index].toString(),
-                                        initialPrice: productPrice[index],
-                                        productPrice: productPrice[index],
-                                        quantity: 1,
-                                        unitTag: productUnit[index].toString(),
-                                        image: productImage[index].toString()),
-                                  )
-                                      .then((value) {
-                                    print('Product is added');
-                                    cart.addTotalPrice(double.parse(
-                                        productPrice[index].toString()));
-                                    cart.addCounter();
-                                  }).onError((error, stackTrace) {
-                                    print(error.toString());
-                                  });
-                                },
-                                child: Text('Add to Cart'),
-                              )),
-                        ),
+                        vertical: 10,
+                        horizontal: 3,
                       ),
-                    );
-                  }))
+                      child: ListTile(
+                          leading:
+                              Image.network(productImage[index].toString()),
+                          title: Text(
+                            productName[index].toString(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            'Rs ${productPrice[index].toString()} per ${productUnit[index].toString()}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          trailing: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                            ),
+                            onPressed: () {
+                              dbHelper!
+                                  .insert(
+                                Cart(
+                                    id: index,
+                                    productId: index.toString(),
+                                    productName: productName[index].toString(),
+                                    initialPrice: productPrice[index],
+                                    productPrice: productPrice[index],
+                                    quantity: 1,
+                                    unitTag: productUnit[index].toString(),
+                                    image: productImage[index].toString()),
+                              )
+                                  .then((value) {
+                                print('Product is added');
+                                cart.addTotalPrice(double.parse(
+                                    productPrice[index].toString()));
+                                cart.addCounter();
+                              }).onError((error, stackTrace) {
+                                print(error.toString());
+                              });
+                            },
+                            child: Text('Add to Cart'),
+                          )),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
