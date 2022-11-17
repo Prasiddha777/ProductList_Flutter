@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:badges/badges.dart';
 import 'package:cart/database/db_helper.dart';
+import 'package:cart/model/cart_model.dart';
 import 'package:cart/provider/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -71,7 +74,7 @@ class _CartScreenState extends State<CartScreen> {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 20,
-                                horizontal: 3,
+                                horizontal: 0,
                               ),
                               child: ListTile(
                                 leading: Image.network(
@@ -81,36 +84,133 @@ class _CartScreenState extends State<CartScreen> {
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
-                                subtitle: Text(
-                                  'Rs ${snapshot.data![index].productPrice.toString()} per ${snapshot.data![index].unitTag.toString()}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                trailing: Column(
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        dbHelper!.deleteCartList(
-                                            snapshot.data![index].id!);
-                                        //
-                                        cart.removeCounter();
-                                        cart.removeTotalPrice(double.parse(
-                                            snapshot.data![index].productPrice
-                                                .toString()));
-                                      },
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        size: 20,
-                                        color: Colors.red,
+                                    Text(
+                                      'Rs ${snapshot.data![index].productPrice.toString()} per ${snapshot.data![index].unitTag.toString()}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Container(
-                                      width: 95,
-                                      height: 5,
-                                      color: Colors.amber,
-                                    ),
+                                    Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            int quantity =
+                                                snapshot.data![index].quantity;
+                                            int price = snapshot
+                                                .data![index].initialPrice;
+                                            quantity--;
+                                            int? newprice = quantity * price;
+                                            if (quantity > 0) {
+                                              dbHelper!
+                                                  .updateQuantity(
+                                                Cart(
+                                                    id: snapshot
+                                                        .data![index].id,
+                                                    productId: snapshot
+                                                        .data![index].productId
+                                                        .toString(),
+                                                    productName: snapshot
+                                                        .data![index]
+                                                        .productName,
+                                                    initialPrice: snapshot
+                                                        .data![index]
+                                                        .initialPrice,
+                                                    productPrice: newprice,
+                                                    quantity: quantity,
+                                                    unitTag: snapshot
+                                                        .data![index].unitTag
+                                                        .toString(),
+                                                    image: snapshot
+                                                        .data![index].image
+                                                        .toString()),
+                                              )
+                                                  .then((value) {
+                                                quantity = 0;
+                                                newprice = 0;
+                                                cart.removeTotalPrice(
+                                                    double.parse(snapshot
+                                                        .data![index]
+                                                        .initialPrice
+                                                        .toString()));
+                                              }).onError((error, stackTrace) {
+                                                print(error.toString());
+                                              });
+                                            }
+                                          },
+                                          child: const Icon(Icons.remove),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(snapshot.data![index].quantity
+                                            .toString()),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        InkWell(
+                                            onTap: () {
+                                              int quantity = snapshot
+                                                  .data![index].quantity;
+                                              int price = snapshot
+                                                  .data![index].initialPrice;
+                                              quantity++;
+                                              int? newprice = quantity * price;
+                                              dbHelper!
+                                                  .updateQuantity(
+                                                Cart(
+                                                    id: snapshot
+                                                        .data![index].id,
+                                                    productId: snapshot
+                                                        .data![index].productId
+                                                        .toString(),
+                                                    productName: snapshot
+                                                        .data![index]
+                                                        .productName,
+                                                    initialPrice: snapshot
+                                                        .data![index]
+                                                        .initialPrice,
+                                                    productPrice: newprice,
+                                                    quantity: quantity,
+                                                    unitTag: snapshot
+                                                        .data![index].unitTag
+                                                        .toString(),
+                                                    image: snapshot
+                                                        .data![index].image
+                                                        .toString()),
+                                              )
+                                                  .then((value) {
+                                                quantity = 0;
+                                                newprice = 0;
+                                                cart.addTotalPrice(double.parse(
+                                                    snapshot.data![index]
+                                                        .initialPrice
+                                                        .toString()));
+                                              }).onError((error, stackTrace) {
+                                                print(error.toString());
+                                              });
+                                            },
+                                            child: const Icon(Icons.add)),
+                                      ],
+                                    )
                                   ],
+                                ),
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    dbHelper!.deleteCartList(
+                                        snapshot.data![index].id!);
+                                    //
+                                    cart.removeCounter();
+                                    cart.removeTotalPrice(double.parse(snapshot
+                                        .data![index].productPrice
+                                        .toString()));
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
                                 ),
                               ),
                             ),
@@ -126,13 +226,21 @@ class _CartScreenState extends State<CartScreen> {
 
           //
           Consumer<CartProvider>(builder: (context, value, child) {
-            return Column(
-              children: [
-                ReusableWidget(
-                  title: 'Sub Total',
-                  value: r'Rs ' + value.getTotalPrice().toStringAsFixed(2),
-                )
-              ],
+            return Visibility(
+              visible: value.getTotalPrice().toStringAsFixed(2) == '0.00'
+                  ? false
+                  : true,
+              child: Column(
+                children: [
+                  ReusableWidget(
+                    title: 'Sub Total',
+                    value: r'Rs ' + value.getTotalPrice().toStringAsFixed(2),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
             );
           })
         ],
