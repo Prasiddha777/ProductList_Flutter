@@ -1,37 +1,35 @@
 class Cart {
   late final int? id;
-  final String? productId;
-  final String? productName;
-  final String? initialPrice;
-  final String? productPrice;
-  final int? quantity;
-  final String? unitTag;
-  final String? image;
+  final String productId;
+  final String productName;
+  final int initialPrice;
+  final int productPrice;
+  final int quantity;
+  final String unitTag;
+  final String image;
 
   Cart(
-      {this.id,
-      this.productId,
-      this.productName,
-      this.initialPrice,
-      this.productPrice,
-      this.quantity,
-      this.unitTag,
-      this.image});
+      {required this.id,
+      required this.productId,
+      required this.productName,
+      required this.initialPrice,
+      required this.productPrice,
+      required this.quantity,
+      required this.unitTag,
+      required this.image});
 
-  factory Cart.fromMap(Map<String, dynamic> fromMap) {
+  factory Cart.fromMap(Map<String, dynamic> cart) {
     return Cart(
-      id: fromMap['id'],
-      productId: fromMap['productId'],
-      productName: fromMap['prodcutName'],
-      initialPrice: fromMap['initialPrice'],
-      productPrice: fromMap['productPrice'],
-      quantity: fromMap['quantity'],
-      unitTag: fromMap['unitTag'],
-      image: fromMap['image'],
-    );
+        id: cart['id'],
+        productId: cart['productId'],
+        productName: cart['productName'],
+        initialPrice: cart['initialPrice'],
+        productPrice: cart['productPrice'],
+        quantity: cart['quantity'],
+        unitTag: cart['unitTag'],
+        image: cart['image']);
   }
 
-  //
   Map<String, Object?> toMap() {
     return {
       'id': id,
@@ -40,7 +38,7 @@ class Cart {
       'initialPrice': initialPrice,
       'productPrice': productPrice,
       'quantity': quantity,
-      'unitTage': unitTag,
+      'unitTag': unitTag,
       'image': image,
     };
   }
