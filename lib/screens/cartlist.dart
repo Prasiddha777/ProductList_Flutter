@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart';
+import 'package:cart/database/db_helper.dart';
 import 'package:cart/provider/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,10 +12,13 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  //
+  DBHelper? dbHelper = DBHelper();
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
     return Scaffold(
+      backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
         iconTheme: const IconThemeData(
           color: Colors.black,
@@ -66,31 +70,49 @@ class _CartScreenState extends State<CartScreen> {
                           child: Card(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                vertical: 10,
+                                vertical: 20,
                                 horizontal: 3,
                               ),
                               child: ListTile(
-                                  leading: Image.network(
-                                      snapshot.data![index].image.toString()),
-                                  title: Text(
-                                    snapshot.data![index].productName
-                                        .toString(),
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
+                                leading: Image.network(
+                                    snapshot.data![index].image.toString()),
+                                title: Text(
+                                  snapshot.data![index].productName.toString(),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  'Rs ${snapshot.data![index].productPrice.toString()} per ${snapshot.data![index].unitTag.toString()}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  subtitle: Text(
-                                    'Rs ${snapshot.data![index].productPrice.toString()} per ${snapshot.data![index].unitTag.toString()}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                ),
+                                trailing: Column(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        dbHelper!.deleteCartList(
+                                            snapshot.data![index].id!);
+                                        //
+                                        cart.removeCounter();
+                                        cart.removeTotalPrice(double.parse(
+                                            snapshot.data![index].productPrice
+                                                .toString()));
+                                      },
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        size: 20,
+                                        color: Colors.red,
+                                      ),
                                     ),
-                                  ),
-                                  trailing: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.amber,
+                                    Container(
+                                      width: 95,
+                                      height: 5,
+                                      color: Colors.amber,
                                     ),
-                                    onPressed: () {},
-                                    child: Text('Add to Cart'),
-                                  )),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         );
@@ -98,9 +120,21 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   );
                 } else {
-                  return Text('No data');
+                  return const Center(child: CircularProgressIndicator());
                 }
-              })
+              }),
+
+          //
+          Consumer<CartProvider>(builder: (context, value, child) {
+            return Column(
+              children: [
+                ReusableWidget(
+                  title: 'Sub Total',
+                  value: r'Rs ' + value.getTotalPrice().toStringAsFixed(2),
+                )
+              ],
+            );
+          })
         ],
       ),
     );
@@ -109,15 +143,27 @@ class _CartScreenState extends State<CartScreen> {
 
 class ReusableWidget extends StatelessWidget {
   ReusableWidget({super.key, required this.title, required this.value});
-  String title, value;
+  final String title, value;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(title,
-        style: Theme.of(context).textTheme.subtitle2,),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 4,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.subtitle2,
+          ),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.subtitle2,
+          ),
+        ],
+      ),
     );
   }
 }
